@@ -1,5 +1,7 @@
 # restaurent_orders-EDA-Using-SQL
 
+kaggle dataset https://www.kaggle.com/datasets/haseebindata/restaurant-orders
+
 select * from order_table
 
 # 📊 Sales & Revenue Analysis
