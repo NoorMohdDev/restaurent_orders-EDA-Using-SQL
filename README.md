@@ -2,36 +2,36 @@
 
 select * from order_table
 
-#-- 📊 Sales & Revenue Analysis
+# 📊 Sales & Revenue Analysis
 
-##-- What is the total revenue generated?
+## What is the total revenue generated?
 
 select sum(quantity * price) as Total_revenue from order_table
 
-##-- What is the average order value (AOV) per order?
+## What is the average order value (AOV) per order?
 
 select orderId, avg(quantity*price) over(partition by orderId) as avgOrderValue from order_table
 
-##-- Which food item generates the highest revenue?
+## Which food item generates the highest revenue?
 
 select foodItem, sum(quantity * price) as highest_revenue from order_table
 group by foodItem
 order by highest_revenue desc
 limit 1
 
-##-- What is the most profitable category by revenue?
+## What is the most profitable category by revenue?
 
 select category, sum(quantity * price) as highest_revenue from order_table
 group by category
 order by highest_revenue desc
 limit 1
 
-##-- How many orders are above ₹500 / ₹1000?
+## How many orders are above ₹500 / ₹1000?
 
 select count(orderId) as no_of_order from order_table
 where price * quantity > 500 or price * quantity > 1000
 
-##-- What is the distribution of order values (low, medium, high spenders)?
+## What is the distribution of order values (low, medium, high spenders)?
 select price * quantity as order_value, 
 case
 	when price * quantity<100 then 'low'
@@ -40,27 +40,27 @@ case
 end as spenders_distribution
 from order_table
 
-#-- 👥 Customer Behavior
+# 👥 Customer Behavior
 
-##-- Who are the top 10 customers by total spend?
+## Who are the top 10 customers by total spend?
 
 select round(price)*quantity as total_spend, customerName from order_table
 order by total_spend desc
 limit 10
 
-##-- Which customers have the highest order frequency?
+## Which customers have the highest order frequency?
 
 select customerName, count(orderId) as order_freq from order_table
 group by customerName
 having count(orderId) > 1
 order by order_freq desc
 
-##-- What is the average spend per customer?
+## What is the average spend per customer?
 
 select customerName, avg(price*quantity) as avg_spend from order_table
 group by customerName
 
-##-- Which customers only ordered once (one-time buyers) vs repeat customers?
+## Which customers only ordered once (one-time buyers) vs repeat customers?
 
 select customerName, count(orderId) as order_freq,
 case
@@ -71,58 +71,58 @@ from order_table
 group by customerName
 order by order_freq desc
 
-##-- What are the preferred categories of each customer?
+## What are the preferred categories of each customer?
 
 select customerName,count(category) as cat_count, string_agg(category,', ') as categories from order_table
 group by customerName
 order by cat_count desc
 
-#-- 🍕 Product Insights
+# 🍕 Product Insights
 
-##-- What are the top 5 most ordered food items?
+## What are the top 5 most ordered food items?
 
 select foodItem, count(orderId) as most_ordered_item from order_table
 group by foodItem
 order by most_ordered_item desc
 limit 5
 
-##-- Which category has the highest average order value?
+## Which category has the highest average order value?
 
 select category, avg(price*quantity) as avg_order_value from order_table
 group by category
 order by avg_order_value desc
 limit 1
 
-##-- Which food item has the highest average quantity per order?
+## Which food item has the highest average quantity per order?
 
 select foodItem, avg(quantity) as avg_quantity from order_table
 group by foodItem
 order by avg_quantity desc
 limit 1
 
-#-- 💳 Payment Insights
+# 💳 Payment Insights
 
-##-- What is the distribution of payment methods (Cash, Card, UPI, Wallets)?
+## What is the distribution of payment methods (Cash, Card, UPI, Wallets)?
 
 select paymentMethod, count(orderId) as total_orders from order_table
 group by paymentMethod
 order by total_orders
 
-##-- Is there a difference in average spend by payment method?
+## Is there a difference in average spend by payment method?
 
 select paymentMethod, avg(price*quantity) as avg_spend from order_table
 group by paymentMethod
 order by avg_spend
 
-##-- Do customers who use online payments spend more than cash users?
+## Do customers who use online payments spend more than cash users?
 
 select paymentMethod, sum(price*quantity) as avg_spend from order_table
 group by paymentMethod
 order by avg_spend
 
-#-- ⏰ Time-based Analysis
+# ⏰ Time-based Analysis
 
-##-- What are the peak order hours of the day?
+## What are the peak order hours of the day?
 
 with peak_hours as  (
 	select extract(day from orderTime) as order_day, extract(hour from orderTime) as order_hours, count(*) as total_orders from order_table
@@ -133,7 +133,7 @@ with peak_hours as  (
 select * from peak_hours
 where total_orders = (select max(total_orders) from peak_hours)
 
-##-- Which days of the week have the highest number of orders?
+## Which days of the week have the highest number of orders?
 
 with orders_by_day as (
     select 
@@ -160,13 +160,13 @@ from ranked_orders
 where day_rank = 1
 order by order_week;
 
-##-- What is the monthly revenue trend?
+## What is the monthly revenue trend?
 
 select extract(month from orderTime) as order_month, sum(price*quantity) as revenue from order_table
 group by extract(month from orderTime)
 order by order_month
 
-##-- Do weekends have higher order values compared to weekdays?
+## Do weekends have higher order values compared to weekdays?
 
 with cte as( 
 	select  to_char(orderTime, 'Day') as day_name, extract(dow from orderTime) as order_weekday, sum(price*quantity) as order_values from order_table
@@ -180,7 +180,7 @@ union
 select string_agg(day_name,', ') as weekday_order_value, sum(order_values) as order_value from cte 
 where order_weekday in (0,6)
 
-##-- What are the seasonal trends (if data spans multiple months)?
+## What are the seasonal trends (if data spans multiple months)?
 
 with cte as (
 	select orderTime,
@@ -196,9 +196,9 @@ select season, count(*) as total_order from cte
 group by season
 order by total_order
 
-#-- 📈 Advanced Analysis
+# 📈 Advanced Analysis
 
-##-- What percentage of revenue comes from the top 20% of customers (Pareto analysis)?
+## What percentage of revenue comes from the top 20% of customers (Pareto analysis)?
 
 with cte as(
 	select customerName,sum(price*quantity) as revenue
@@ -214,7 +214,7 @@ select sum(revenue) as revenue, sum(topcus) as top_20_percent from revenue_perce
 where topcus<=.2
 
 
-##-- Which category has the highest growth rate over time?
+## Which category has the highest growth rate over time?
 
 with monthly_sales as (
     select 
